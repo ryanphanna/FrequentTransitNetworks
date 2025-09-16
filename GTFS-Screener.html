@@ -1,677 +1,235 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transit Frequency Analyzer</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-        
-        .container {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
-        }
-        
-        h1 {
-            color: #2d3748;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2.5em;
-        }
-        
-        .upload-section {
-            background: #f8fafc;
-            padding: 25px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            border: 2px dashed #cbd5e0;
-        }
-        
-        .file-input {
-            margin-bottom: 20px;
-        }
-        
-        input[type="file"] {
-            padding: 10px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            background: white;
-            width: 100%;
-            font-size: 16px;
-        }
-        
-        .controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        label {
-            font-weight: 600;
-            color: #4a5568;
-            margin-bottom: 5px;
-            display: block;
-        }
-        
-        input[type="time"], select {
-            padding: 8px 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 6px;
-            font-size: 14px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
-        button {
-            background: linear-gradient(135deg, #4299e1, #3182ce);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(66, 153, 225, 0.3);
-        }
-        
-        button:disabled {
-            background: #a0aec0;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .results {
-            margin-top: 30px;
-        }
-        
-        .summary {
-            background: #edf2f7;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .summary h3 {
-            margin-top: 0;
-            color: #2d3748;
-        }
-        
-        .route-card {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border-left: 5px solid #4299e1;
-        }
-        
-        .route-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .route-name {
-            font-weight: 700;
-            font-size: 1.3em;
-            color: #2d3748;
-        }
-        
-        .route-description {
-            color: #4a5568;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
-        
-        .total-trips {
-            background: #e6fffa;
-            color: #234e52;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: 600;
-        }
-        
-        .headway-distribution {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .headway-bucket {
-            text-align: center;
-            padding: 15px 10px;
-            border-radius: 8px;
-            border: 2px solid;
-        }
-        
-        .bucket-10 {
-            background: #c6f6d5;
-            border-color: #48bb78;
-            color: #22543d;
-        }
-        
-        .bucket-15 {
-            background: #bee3f8;
-            border-color: #4299e1;
-            color: #2a69ac;
-        }
-        
-        .bucket-20 {
-            background: #faf089;
-            border-color: #ecc94b;
-            color: #744210;
-        }
-        
-        .bucket-30 {
-            background: #fed7aa;
-            border-color: #ed8936;
-            color: #9c4221;
-        }
-        
-        .bucket-60 {
-            background: #feb2b2;
-            border-color: #f56565;
-            color: #742a2a;
-        }
-        
-        .bucket-over {
-            background: #e2e8f0;
-            border-color: #a0aec0;
-            color: #4a5568;
-        }
-        
-        .bucket-count {
-            font-size: 1.8em;
-            font-weight: 700;
-            display: block;
-        }
-        
-        .bucket-label {
-            font-size: 0.85em;
-            font-weight: 600;
-            margin-top: 5px;
-        }
-        
-        .bucket-percent {
-            font-size: 0.75em;
-            opacity: 0.8;
-            margin-top: 2px;
-        }
-        
-        .error {
-            background: #fed7d7;
-            color: #742a2a;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 10px 0;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #4a5568;
-        }
-        
-        .instructions {
-            background: #bee3f8;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .instructions h3 {
-            margin-top: 0;
-            color: #2c5282;
-        }
-        
-        .no-data {
-            text-align: center;
-            color: #718096;
-            padding: 40px;
-            background: #f7fafc;
-            border-radius: 10px;
-        }
-        
-        .export-btn {
-            background: linear-gradient(135deg, #48bb78, #38a169);
-            margin-top: 20px;
-            margin-right: 10px;
-        }
-        
-        .export-btn:hover {
-            box-shadow: 0 10px 20px rgba(72, 187, 120, 0.3);
-        }
-        
-        .debug-info {
-            background: #f0f4f8;
-            border: 1px solid #cbd5e0;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
-            font-family: monospace;
-            font-size: 0.9em;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GTFS — Least Worst Frequency (Strict Grace)</title>
+<style>
+  body{font-family: ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial;max-width:1200px;margin:0 auto;padding:24px;background:#f8fafc}
+  h1{margin:0 0 16px}
+  .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.04);padding:16px;margin:16px 0}
+  label{font-weight:600;display:block;margin:8px 0 4px}
+  input[type="time"],input[type="file"]{border:1px solid #d1d5db;border-radius:8px;padding:8px 10px;font-size:14px;width:100%}
+  .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  button{background:#111827;color:#fff;border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{border:1px solid #e5e7eb;padding:8px 10px;text-align:center}
+  th{background:#f1f5f9;position:sticky;top:0}
+  .muted{color:#6b7280}
+  .small{font-size:12px}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>🚌 Transit Frequency Analyzer</h1>
-        
-        <div class="instructions">
-            <h3>📋 Analyze Any City's Transit Frequency</h3>
-            <p>Upload any GTFS ZIP file to see detailed headway analysis. Shows how many gaps between trips fall into each time bucket (≤10min, 11-15min, 16-20min, 21-30min, 31-60min, >60min).</p>
-        </div>
-        
-        <div class="upload-section">
-            <div class="file-input">
-                <label for="gtfsFile">Upload GTFS ZIP file:</label>
-                <input type="file" id="gtfsFile" accept=".zip" />
-            </div>
-            
-            <div class="controls">
-                <div>
-                    <label for="startTime">Analysis Start Time:</label>
-                    <input type="time" id="startTime" value="07:00" />
-                </div>
-                <div>
-                    <label for="endTime">Analysis End Time:</label>
-                    <input type="time" id="endTime" value="22:00" />
-                </div>
-                <div>
-                    <label for="dayType">Day Type:</label>
-                    <select id="dayType">
-                        <option value="all">All Days</option>
-                        <option value="weekday" selected>Weekdays Only</option>
-                        <option value="weekend">Weekends Only</option>
-                    </select>
-                </div>
-            </div>
-            
-            <button onclick="analyzeRoutes()" id="analyzeBtn" disabled>
-                Analyze Routes
-            </button>
-        </div>
-        
-        <div id="debugInfo" class="debug-info" style="display: none;"></div>
-        
-        <div id="results" class="results" style="display: none;">
-            <div class="summary" id="summary"></div>
-            <div id="routeResults"></div>
-        </div>
-        
-        <div id="loading" class="loading" style="display: none;">
-            <p>🔄 Analyzing transit schedules...</p>
-        </div>
-        
-        <div id="error" class="error" style="display: none;"></div>
+  <h1>GTFS — Least Worst Frequency (Strict Grace)</h1>
+  <div class="card">
+    <div class="grid">
+      <div>
+        <label>GTFS ZIP</label>
+        <input id="gtfs" type="file" accept=".zip">
+      </div>
+      <div>
+        <label>Start</label>
+        <input id="t0" type="time" value="07:00">
+      </div>
+      <div>
+        <label>End</label>
+        <input id="t1" type="time" value="22:00">
+      </div>
     </div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button id="go" disabled>Analyze</button>
+      <span class="muted small">Rule: ≤2 gaps within +2min grace; any gap &gt; (tier+2) fails that tier.</span>
+    </div>
+  </div>
 
-    <script>
-        let analysisResults = [];
-        
-        document.getElementById('gtfsFile').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            document.getElementById('analyzeBtn').disabled = !file;
-        });
-        
-        function log(message) {
-            console.log(message);
-            const debugDiv = document.getElementById('debugInfo');
-            debugDiv.style.display = 'block';
-            debugDiv.innerHTML += message + '<br>';
-        }
-        
-        async function analyzeRoutes() {
-            const fileInput = document.getElementById('gtfsFile');
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                showError('Please select a GTFS ZIP file first');
-                return;
-            }
-            
-            showLoading(true);
-            hideError();
-            hideResults();
-            document.getElementById('debugInfo').innerHTML = '';
-            document.getElementById('debugInfo').style.display = 'none';
-            
-            try {
-                log('Starting to process GTFS file...');
-                const zip = await JSZip.loadAsync(file);
-                
-                // Parse required CSV files
-                log('Parsing routes.txt...');
-                const routes = await parseCsv(await zip.file('routes.txt').async('text'));
-                log(`Found ${routes.length} routes`);
-                
-                log('Parsing stop_times.txt...');
-                const stopTimes = await parseCsv(await zip.file('stop_times.txt').async('text'));
-                log(`Found ${stopTimes.length} stop times`);
-                
-                log('Parsing trips.txt...');
-                const trips = await parseCsv(await zip.file('trips.txt').async('text'));
-                log(`Found ${trips.length} trips`);
-                
-                // Show sample data
-                if (routes.length > 0) {
-                    log('Sample route: ' + JSON.stringify(routes[0]));
-                }
-                if (stopTimes.length > 0) {
-                    log('Sample stop time: ' + JSON.stringify(stopTimes[0]));
-                }
-                
-                const frequencies = calculateFrequencies(routes, stopTimes, trips);
-                analysisResults = frequencies;
-                displayResults(frequencies);
-                
-            } catch (error) {
-                showError('Error processing GTFS file: ' + error.message);
-                console.error('Full error:', error);
-                log('ERROR: ' + error.message);
-            } finally {
-                showLoading(false);
-            }
-        }
-        
-        function parseCsv(csvText) {
-            return new Promise((resolve) => {
-                Papa.parse(csvText, {
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: (results) => {
-                        // Filter out completely empty rows
-                        const cleanData = results.data.filter(row => {
-                            return Object.values(row).some(value => value && value.trim() !== '');
-                        });
-                        resolve(cleanData);
-                    }
-                });
-            });
-        }
-        
-        function calculateFrequencies(routes, stopTimes, trips) {
-            log('Starting frequency calculation...');
-            const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
-            
-            // Convert time to minutes
-            const timeToMinutes = (timeStr) => {
-                try {
-                    const parts = (timeStr || '').split(':');
-                    if (parts.length < 2) return null;
-                    const hours = parseInt(parts[0]) || 0;
-                    const minutes = parseInt(parts[1]) || 0;
-                    return hours * 60 + minutes;
-                } catch (e) {
-                    return null;
-                }
-            };
-            
-            const startMinutes = timeToMinutes(startTime);
-            const endMinutes = timeToMinutes(endTime);
-            log(`Analyzing time window: ${startTime} to ${endTime} (${startMinutes} to ${endMinutes} minutes)`);
-            
-            const routeFrequencies = [];
-            let processedRoutes = 0;
-            
-            for (const route of routes) {
-                try {
-                    // Get basic route info safely
-                    const routeId = route.route_id || '';
-                    const routeName = route.route_short_name || route.route_long_name || routeId;
-                    const routeDescription = route.route_long_name || '';
-                    
-                    if (!routeId) continue;
-                    
-                    // Find trips for this route
-                    const routeTrips = trips.filter(trip => trip.route_id === routeId);
-                    if (routeTrips.length === 0) continue;
-                    
-                    const routeTripIds = routeTrips.map(trip => trip.trip_id);
-                    
-                    // Get stop times for these trips in our time window
-                    const routeStopTimes = [];
-                    for (const st of stopTimes) {
-                        if (!routeTripIds.includes(st.trip_id)) continue;
-                        
-                        const arrivalMinutes = timeToMinutes(st.arrival_time);
-                        if (arrivalMinutes === null) continue;
-                        if (arrivalMinutes < startMinutes || arrivalMinutes > endMinutes) continue;
-                        
-                        routeStopTimes.push({
-                            stop_id: st.stop_id,
-                            arrival_minutes: arrivalMinutes,
-                            trip_id: st.trip_id
-                        });
-                    }
-                    
-                    if (routeStopTimes.length < 2) continue;
-                    
-                    // Calculate headways using TERMINUS STOPS ONLY
-                    const headways = [];
-                    const stopGroups = {};
-                    
-                    // Group by stop
-                    for (const st of routeStopTimes) {
-                        if (!stopGroups[st.stop_id]) {
-                            stopGroups[st.stop_id] = [];
-                        }
-                        stopGroups[st.stop_id].push({
-                            arrival_minutes: st.arrival_minutes,
-                            trip_id: st.trip_id
-                        });
-                    }
-                    
-                    // Find terminus stops (stops with the most trips - likely end points)
-                    const stopCounts = {};
-                    for (const stopId of Object.keys(stopGroups)) {
-                        const uniqueTrips = new Set(stopGroups[stopId].map(d => d.trip_id));
-                        stopCounts[stopId] = uniqueTrips.size;
-                    }
-                    
-                    // Get the top 2-3 stops with most trips (likely terminus stops)
-                    const sortedStops = Object.entries(stopCounts)
-                        .sort((a, b) => b[1] - a[1])
-                        .slice(0, 3)
-                        .map(([stopId, count]) => stopId);
-                    
-                    if (processedRoutes < 2) {
-                        log(`Route ${routeName}: Using terminus stops: ${sortedStops.join(', ')}`);
-                        log(`Stop counts: ${sortedStops.map(s => `${s}:${stopCounts[s]}`).join(', ')}`);
-                    }
-                    
-                    // Calculate headways only for terminus stops
-                    for (const stopId of sortedStops) {
-                        const stopData = stopGroups[stopId];
-                        
-                        // Remove duplicates - each trip should only appear once
-                        const uniqueTrips = {};
-                        for (const data of stopData) {
-                            if (!uniqueTrips[data.trip_id]) {
-                                uniqueTrips[data.trip_id] = data.arrival_minutes;
-                            }
-                        }
-                        
-                        const times = Object.values(uniqueTrips).sort((a, b) => a - b);
-                        
-                        // Calculate headways between consecutive trips at this terminus
-                        if (times.length >= 2) {
-                            for (let i = 1; i < times.length; i++) {
-                                const headway = times[i] - times[i-1];
-                                // Only count reasonable transit headways (5 minutes to 4 hours)
-                                if (headway >= 5 && headway <= 240) {
-                                    headways.push(headway);
-                                }
-                            }
-                        }
-                    }
-                    
-                    if (headways.length === 0) continue;
-                    
-                    // Debug first few routes
-                    if (processedRoutes < 2) {
-                        log(`\nRoute ${routeName}: ${headways.length} headways calculated`);
-                        log(`Sample headways: ${headways.slice(0, 10).join(', ')}`);
-                        log(`Min headway: ${Math.min(...headways)}, Max headway: ${Math.max(...headways)}`);
-                    }
-                    
-                    // Categorize headways
-                    const buckets = {
-                        '≤10min': headways.filter(h => h <= 10).length,
-                        '11-15min': headways.filter(h => h > 10 && h <= 15).length,
-                        '16-20min': headways.filter(h => h > 15 && h <= 20).length,
-                        '21-30min': headways.filter(h => h > 20 && h <= 30).length,
-                        '31-60min': headways.filter(h => h > 30 && h <= 60).length,
-                        '>60min': headways.filter(h => h > 60).length
-                    };
-                    
-                    const totalGaps = headways.length;
-                    const avgHeadway = Math.round(headways.reduce((a, b) => a + b, 0) / totalGaps);
-                    
-                    routeFrequencies.push({
-                        route_id: routeId,
-                        route_name: routeName,
-                        route_description: routeDescription,
-                        total_gaps: totalGaps,
-                        avg_headway: avgHeadway,
-                        buckets: buckets,
-                        percentages: {
-                            '≤10min': Math.round((buckets['≤10min'] / totalGaps) * 100),
-                            '11-15min': Math.round((buckets['11-15min'] / totalGaps) * 100),
-                            '16-20min': Math.round((buckets['16-20min'] / totalGaps) * 100),
-                            '21-30min': Math.round((buckets['21-30min'] / totalGaps) * 100),
-                            '31-60min': Math.round((buckets['31-60min'] / totalGaps) * 100),
-                            '>60min': Math.round((buckets['>60min'] / totalGaps) * 100)
-                        }
-                    });
-                    
-                    processedRoutes++;
-                    
-                } catch (error) {
-                    log(`Error processing route ${route.route_id || 'unknown'}: ${error.message}`);
-                    continue;
-                }
-            }
-            
-            log(`Processed ${processedRoutes} routes successfully`);
-            
-            // Sort by average headway (most frequent first)
-            return routeFrequencies.sort((a, b) => a.avg_headway - b.avg_headway);
-        }
-        
-        function displayResults(frequencies) {
-            const summary = document.getElementById('summary');
-            const routeResults = document.getElementById('routeResults');
-            
-            const totalRoutes = frequencies.length;
-            const excellentRoutes = frequencies.filter(f => f.percentages['≤10min'] >= 50).length;
-            const goodRoutes = frequencies.filter(f => f.percentages['≤10min'] + f.percentages['11-15min'] >= 50).length;
-            
-            summary.innerHTML = `
-                <h3>📊 Transit Frequency Analysis</h3>
-                <p><strong>${totalRoutes}</strong> routes analyzed from ${document.getElementById('startTime').value} to ${document.getElementById('endTime').value}</p>
-                <p><strong>${excellentRoutes}</strong> routes with majority ≤10min gaps</p>
-                <p><strong>${goodRoutes}</strong> routes with majority ≤15min gaps</p>
-            `;
-            
-            if (frequencies.length === 0) {
-                routeResults.innerHTML = '<div class="no-data">No route data found for the selected time period.</div>';
-            } else {
-                routeResults.innerHTML = frequencies.map(route => `
-                    <div class="route-card">
-                        <div class="route-header">
-                            <div>
-                                <div class="route-name">${route.route_name}</div>
-                                <div class="route-description">${route.route_description}</div>
-                            </div>
-                            <div class="total-trips">${route.total_gaps} gaps | avg ${route.avg_headway}min</div>
-                        </div>
-                        
-                        <div class="headway-distribution">
-                            <div class="headway-bucket bucket-10">
-                                <span class="bucket-count">${route.buckets['≤10min']}</span>
-                                <div class="bucket-label">≤10 min</div>
-                                <div class="bucket-percent">${route.percentages['≤10min']}%</div>
-                            </div>
-                            <div class="headway-bucket bucket-15">
-                                <span class="bucket-count">${route.buckets['11-15min']}</span>
-                                <div class="bucket-label">11-15 min</div>
-                                <div class="bucket-percent">${route.percentages['11-15min']}%</div>
-                            </div>
-                            <div class="headway-bucket bucket-20">
-                                <span class="bucket-count">${route.buckets['16-20min']}</span>
-                                <div class="bucket-label">16-20 min</div>
-                                <div class="bucket-percent">${route.percentages['16-20min']}%</div>
-                            </div>
-                            <div class="headway-bucket bucket-30">
-                                <span class="bucket-count">${route.buckets['21-30min']}</span>
-                                <div class="bucket-label">21-30 min</div>
-                                <div class="bucket-percent">${route.percentages['21-30min']}%</div>
-                            </div>
-                            <div class="headway-bucket bucket-60">
-                                <span class="bucket-count">${route.buckets['31-60min']}</span>
-                                <div class="bucket-label">31-60 min</div>
-                                <div class="bucket-percent">${route.percentages['31-60min']}%</div>
-                            </div>
-                            <div class="headway-bucket bucket-over">
-                                <span class="bucket-count">${route.buckets['>60min']}</span>
-                                <div class="bucket-label">>60 min</div>
-                                <div class="bucket-percent">${route.percentages['>60min']}%</div>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-            
-            showResults(true);
-        }
-        
-        function showLoading(show) {
-            document.getElementById('loading').style.display = show ? 'block' : 'none';
-        }
-        
-        function showResults(show) {
-            document.getElementById('results').style.display = show ? 'block' : 'none';
-        }
-        
-        function showError(message) {
-            const errorDiv = document.getElementById('error');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-        }
-        
-        function hideError() {
-            document.getElementById('error').style.display = 'none';
-        }
-        
-        function hideResults() {
-            document.getElementById('results').style.display = 'none';
-        }
-    </script>
+  <div id="out" class="card" style="display:none">
+    <div style="overflow:auto; max-height:70vh">
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th>Route</th>
+            <th>Dir</th>
+            <th>Day</th>
+            <th>≤10</th><th>11–15</th><th>16–20</th><th>21–30</th><th>31–60</th><th>&gt;60</th>
+            <th>Avg</th>
+            <th>Least‑Worst Tier</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+const fileEl=document.getElementById('gtfs');
+const btn=document.getElementById('go');
+fileEl.addEventListener('change',e=>btn.disabled=!e.target.files[0]);
+btn.addEventListener('click',analyze);
+
+function t2m(s){const p=(s||'').split(':');if(p.length<2)return null;return (+p[0])*60+(+p[1]);}
+function parseCsv(text){
+  return new Promise(res=>Papa.parse(text,{header:true,skipEmptyLines:true,complete:r=>{
+    const clean=r.data.filter(row=>Object.values(row).some(v=>v&&String(v).trim()!==''));res(clean);
+  }}));
+}
+function bucketCounts(headways){
+  const b={'≤10':0,'11–15':0,'16–20':0,'21–30':0,'31–60':0,'>60':0};
+  for(const h of headways){
+    if(h<=10)b['≤10']++;
+    else if(h<=15)b['11–15']++;
+    else if(h<=20)b['16–20']++;
+    else if(h<=30)b['21–30']++;
+    else if(h<=60)b['31–60']++;
+    else b['>60']++;
+  }
+  return b;
+}
+// STRICT grace: at most 2 gaps where T < h <= T+2; any h > T+2 fails immediately.
+function leastWorstTier(headways){
+  const tiers=[10,15,20,30,60,Infinity];
+  const GRACE=2, MAX_GRACE_COUNT=2;
+  for(const T of tiers){
+    if(T===Infinity) return '>60';
+    let graceCount=0;
+    let fail=false;
+    for(const h of headways){
+      if(h<=T) continue;
+      if(h<=T+GRACE){
+        graceCount++;
+        if(graceCount>MAX_GRACE_COUNT){ fail=true; break; }
+      }else{ // strictly beyond grace
+        fail=true; break;
+      }
+    }
+    if(!fail){
+      return String(T);
+    }
+  }
+  return '>60';
+}
+
+async function analyze(){
+  const file=fileEl.files[0]; if(!file) return;
+  const t0=t2m(document.getElementById('t0').value);
+  const t1=t2m(document.getElementById('t1').value);
+
+  const zip=await JSZip.loadAsync(file);
+  const need=['routes.txt','trips.txt','stop_times.txt','calendar.txt'];
+  for(const n of need){ if(!zip.file(n)) { alert(n+' missing'); return; } }
+
+  const [routes,trips,stopTimes,calendar]=await Promise.all([
+    parseCsv(await zip.file('routes.txt').async('text')),
+    parseCsv(await zip.file('trips.txt').async('text')),
+    parseCsv(await zip.file('stop_times.txt').async('text')),
+    parseCsv(await zip.file('calendar.txt').async('text')),
+  ]);
+
+  const routeById={}; for(const r of routes){ if(r.route_id) routeById[r.route_id]=r; }
+  const calByService={}; for(const c of calendar){ if(c.service_id) calByService[c.service_id]=c; }
+
+  // origin departure per trip
+  const originForTrip=new Map();
+  {
+    const best=new Map();
+    for(const st of stopTimes){
+      const tid=st.trip_id; if(!tid) continue;
+      const seq=parseInt(st.stop_sequence||'0',10);
+      const prev=best.get(tid);
+      if(!prev || seq<prev.seq) best.set(tid,{seq,row:st});
+    }
+    for(const [tid,obj] of best.entries()){
+      const r=obj.row;
+      const dep=(r.departure_time&&r.departure_time.trim())?r.departure_time:r.arrival_time;
+      const m=t2m(dep);
+      if(m!=null) originForTrip.set(tid,m);
+    }
+  }
+
+  function tripsForDay(day){
+    return trips.filter(tr=>{
+      const c=calByService[tr.service_id];
+      if(!c) return false;
+      if(day==='Weekday') return ['monday','tuesday','wednesday','thursday','friday'].some(d=>c[d]==='1');
+      if(day==='Saturday') return c['saturday']==='1';
+      if(day==='Sunday') return c['sunday']==='1';
+      return false;
+    });
+  }
+
+  const days=['Weekday','Saturday','Sunday'];
+  const rows=[];
+
+  for(const day of days){
+    const dayTrips=tripsForDay(day);
+    const map=new Map();
+    for(const tr of dayTrips){
+      const dir=(tr.direction_id!==undefined && tr.direction_id!=='' && tr.direction_id!==null)? tr.direction_id : '0';
+      const key=`${tr.route_id}::${dir}`;
+      if(!map.has(key)) map.set(key,[]);
+      map.get(key).push(tr.trip_id);
+    }
+
+    for(const [key,tripIds] of map.entries()){
+      const [route_id,dir]=key.split('::');
+      const rt=routeById[route_id]||{};
+      const rname=rt.route_short_name||rt.route_long_name||route_id;
+
+      const times=[];
+      for(const tid of tripIds){
+        const m=originForTrip.get(tid);
+        if(m==null) continue;
+        if(m<t0 || m>t1) continue;
+        times.push(m);
+      }
+      if(times.length<2) continue;
+      times.sort((a,b)=>a-b);
+
+      const gaps=[];
+      for(let i=1;i<times.length;i++){
+        const h=times[i]-times[i-1];
+        if(h>=5 && h<=240) gaps.push(h);
+      }
+      if(gaps.length===0) continue;
+
+      const b=bucketCounts(gaps);
+      const avg=Math.round(gaps.reduce((a,b)=>a+b,0)/gaps.length);
+      const tier=leastWorstTier(gaps);
+
+      rows.push({route:rname, dir, day, b, avg, tier});
+    }
+  }
+
+  rows.sort((a,b)=>{
+    if(a.route!==b.route) return (''+a.route).localeCompare(''+b.route,undefined,{numeric:true});
+    const order={'Weekday':0,'Saturday':1,'Sunday':2};
+    if(a.day!==b.day) return order[a.day]-order[b.day];
+    return (''+a.dir).localeCompare(''+b.dir);
+  });
+
+  const tbody=document.querySelector('#tbl tbody');
+  tbody.innerHTML='';
+  for(const r of rows){
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${r.route}</td>
+      <td>${r.dir}</td>
+      <td>${r.day}</td>
+      <td>${r.b['≤10']}</td>
+      <td>${r.b['11–15']}</td>
+      <td>${r.b['16–20']}</td>
+      <td>${r.b['21–30']}</td>
+      <td>${r.b['31–60']}</td>
+      <td>${r.b['>60']}</td>
+      <td>${r.avg}</td>
+      <td>${r.tier} min</td>
+    `;
+    tbody.appendChild(tr);
+  }
+  document.getElementById('out').style.display='block';
+}
+</script>
 </body>
 </html>
